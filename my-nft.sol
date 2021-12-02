@@ -2,7 +2,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
 contract TradingCard is ERC721, Ownable, KeeperCompatibleInterface {
@@ -11,6 +10,7 @@ contract TradingCard is ERC721, Ownable, KeeperCompatibleInterface {
     mapping(uint256 => uint64) private _counters;
     uint interval = 30 seconds;
     uint lastTimeStamp;
+
 
     constructor() ERC721("Stephen Fluin Trading Card", "SFTC") {}
 
@@ -30,15 +30,20 @@ contract TradingCard is ERC721, Ownable, KeeperCompatibleInterface {
         public view virtual override returns (string memory)
     {
         require(_exists(tokenId),"ERC721Metadata: URI query for nonexistent token");
+        //return _tokenURIs[tokenId];
         return string(abi.encodePacked(_tokenURIs[tokenId],Strings.toString(_counters[1]),".json"));
+
     }
-    
-    function checkUpkeep(bytes calldata checkData) external returns (bool upkeepNeeded, bytes memory performData) {
-        upkeepNeeded = (block.timestamp - lastTimeStamp) > interval && _counters[1] < 4;
+
+    function checkUpkeep(bytes calldata checkData) external view override returns (bool upkeepNeeded, bytes memory performData) {
+        uint256 tokenId = 1;
+        upkeepNeeded = (block.timestamp - lastTimeStamp) > interval && _counters[tokenId] < 4;
         performData = checkData;
     }
-    function performUpkeep(bytes calldata performData) external {
-        _counters[1] += 1;
+    function performUpkeep(bytes calldata performData) external override {
+        uint256 tokenId = 1;
+        _counters[tokenId] += 1;
         lastTimeStamp = block.timestamp;
     }
+
 }
